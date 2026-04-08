@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 // home handler
@@ -15,11 +17,25 @@ func home(w http.ResponseWriter, r *http.Request) {
 // snippetview handler
 
 func snippetView(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("display the snippets"))
+
+	id, err := strconv.Atoi(r.PathValue("id"))
+
+	if err != nil || id < 1 {
+		http.NotFound(w, r)
+		return
+	}
+
+	msg := fmt.Sprintf("display a specific snippet with ID %d...", id)
+	w.Write([]byte(msg))
 }
 
 func snippetCreate(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("snippet created"))
+	w.Write([]byte("display a form for creating a snippet"))
+}
+
+func snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+
+	w.Write([]byte("snippet created "))
 }
 func main() {
 
@@ -28,9 +44,10 @@ func main() {
 	mux := http.NewServeMux()
 
 	//register the route with handlers
-	mux.HandleFunc("/{$}", home)
-	mux.HandleFunc("/snippet/view", snippetView)
-	mux.HandleFunc("/snippet/create", snippetCreate)
+	mux.HandleFunc("GET /{$}", home)
+	mux.HandleFunc("GET /snippet/view/{id}", snippetView)
+	mux.HandleFunc("GET /snippet/create", snippetCreate)
+	mux.HandleFunc("POST /snippet/create", snippetCreatePost)
 
 	log.Printf("starting on :4000 ")
 
